@@ -1,0 +1,12 @@
+.env
+
+venv/
+.venv/
+.idea/
+.mypy_cache/
+__pycache__/
+
+temp/*
+
+# Mac OS
+.DS_Store
