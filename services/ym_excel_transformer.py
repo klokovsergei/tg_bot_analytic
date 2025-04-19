@@ -1,26 +1,13 @@
-import asyncio
-from datetime import datetime, timedelta
-
 import pandas as pd
 import numpy as np
-import re
-
 from pandas import ExcelFile, DataFrame
-from torchgen.executorch.api.et_cpp import return_type
 
-# Отображать все столбцы
-pd.set_option('display.max_columns', None)
+from datetime import timedelta
+import re
+import warnings
 
-# Отображать все строки
-pd.set_option('display.max_rows', None)
+warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
-# Не обрезать содержимое столбцов
-pd.set_option('display.max_colwidth', None)
-
-# (Опционально) ширина консоли
-pd.set_option('display.width', None)
-
-file_path = 'united_orders_21570113_01-01-2025_31-01-2025.xlsx'
 max_order_days_ago = 60
 
 # Список листов, которые используются в отчете для преобразований
@@ -202,7 +189,8 @@ async def ym_excel_transformer(file) -> str:
         Среднее='mean'
     ).round(2)
 
-    sku_income = final_df[final_df['Статус товара'] == 'Доставлен'].groupby('Ваш SKU')['Доход за вычетом услуг Маркета, ₽'].sum()
+    sku_income = final_df[final_df['Статус товара'] == 'Доставлен'].groupby('Ваш SKU')[
+        'Доход за вычетом услуг Маркета, ₽'].sum()
 
     result_div_and_cancel = final_df.groupby('Ваш SKU').agg(
         Услуги_Маркета=('Все услуги Маркета за заказы, ₽', 'sum'),
@@ -211,7 +199,7 @@ async def ym_excel_transformer(file) -> str:
 
     cancelled_counts = final_df[
         final_df['Статус товара'] == 'Отменён'
-    ].groupby('Ваш SKU').agg(
+        ].groupby('Ваш SKU').agg(
         Количество_отменённых=('Количество', 'sum')
     )
 
@@ -220,11 +208,12 @@ async def ym_excel_transformer(file) -> str:
     merged_df = merged_df.merge(cancelled_counts, how='left', on='Ваш SKU')
     merged_df = merged_df.fillna(0)
 
-    merged_df['Процент_отменённых, %'] = (merged_df['Количество_отменённых'] / merged_df['sum_div_and_cancel']).round(4) * 100
+    merged_df['Процент_отменённых, %'] = (merged_df['Количество_отменённых'] / merged_df['sum_div_and_cancel']).round(
+        4) * 100
     merged_df['Количество доставленных, шт'] = merged_df['sum_div_and_cancel'] - merged_df['Количество_отменённых']
 
-
-    name_goods = transactions.drop_duplicates(subset=['Ваш SKU'], keep='last')[['Ваш SKU', 'Название товара']].set_index('Ваш SKU')
+    name_goods = transactions.drop_duplicates(subset=['Ваш SKU'], keep='last')[
+        ['Ваш SKU', 'Название товара']].set_index('Ваш SKU')
     merged_df = merged_df.merge(name_goods, how='left', on='Ваш SKU')
 
     merged_df = merged_df.rename(columns={
@@ -251,13 +240,9 @@ async def ym_excel_transformer(file) -> str:
 
     merged_df = merged_df[orderliness].sort_values(by='Чистый доход, ₽', ascending=False)
 
-    summary_df = transactions.groupby('Статус товара', observed=True)[['Доход за вычетом услуг Маркета, ₽', 'Все услуги Маркета за заказы, ₽']].sum()
+    summary_df = transactions.groupby('Статус товара', observed=True)[
+        ['Доход за вычетом услуг Маркета, ₽', 'Все услуги Маркета за заказы, ₽']].sum()
     #
-    # with pd.ExcelWriter(file, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
-    #     summary_df.to_excel(writer, sheet_name='Сводка по Статусам', index=True)
-    #     merged_df.to_excel(writer, sheet_name='Сводка по SKU', index=True)
-    print(merged_df.head(5))
-    print(summary_df)
-
-if __name__ == '__main__':
-    asyncio.run(ym_excel_transformer(file_path))
+    with pd.ExcelWriter(file, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+        summary_df.to_excel(writer, sheet_name='Сводка по Статусам', index=True)
+        merged_df.to_excel(writer, sheet_name='Сводка по SKU', index=True)
