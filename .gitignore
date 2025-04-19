@@ -11,3 +11,8 @@ database/users_db.json
 
 # Mac OS
 .DS_Store
+
+
+*.pyc
+*.pyo
+*.pyd
