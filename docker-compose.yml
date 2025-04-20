@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  tg_bot:
+    build: .
+    volumes:
+      - ./database:/app/database
+      - ./temp:/app/temp
+    env_file:
+      - .env
