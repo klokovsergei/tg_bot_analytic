@@ -12,5 +12,4 @@ async def download_document(file: tuple[str, str], user_id: int, bot: Bot) -> st
 
     async with aiofiles.open(local_filename, 'wb') as out_file:
         await out_file.write(file.read())
-
     return local_filename
