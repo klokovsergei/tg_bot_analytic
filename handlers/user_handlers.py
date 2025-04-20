@@ -38,6 +38,11 @@ async def process_help_command(message: Message):
     await message.answer(LEXICON[message.text])
 
 
+@router.message(Command(commands='report_info'))
+async def process_report_info_command(message: Message):
+    await message.answer(LEXICON[message.text])
+
+
 @router.message(F.document)
 async def process_report_message(message: Message):
     file_name = message.document.file_name
