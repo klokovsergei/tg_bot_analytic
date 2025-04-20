@@ -20,7 +20,7 @@ def save_users_db(users_db: dict[int, dict[str, list[tuple[str, str]]]]) -> None
 
 def load_users_db() -> dict[int, dict[str, list[tuple[str, str]]]]:
     """Загружает users_db из JSON-файла"""
-    if not DB_PATH.exists():
+    if not DB_PATH.exists() or DB_PATH.stat().st_size == 0:
         return {}
 
     with DB_PATH.open("r", encoding="utf-8") as f:

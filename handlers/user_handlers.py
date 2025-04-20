@@ -1,7 +1,8 @@
 from copy import deepcopy
 import os
+from datetime import datetime
 
-from aiogram import Router, F, Bot, types
+from aiogram import Router, F, Bot, types, Dispatcher
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 
@@ -15,10 +16,21 @@ router = Router()
 
 
 @router.message(CommandStart())
-async def process_start_command(message: Message):
+async def process_start_command(message: Message, support_chats):
     await message.answer(LEXICON[message.text])
     if message.from_user.id not in users_db:
         users_db[message.from_user.id] = deepcopy(user_dict_template)
+        bot_name = await message.bot.get_me()
+        for chat_id in support_chats:
+            await message.bot.send_message(
+                chat_id=chat_id,
+                text=LEXICON['new_user'].format(
+                    bot_name=bot_name.username,
+                    username=message.from_user.username,
+                    user_id=message.from_user.id,
+                    time_join=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                )
+            )
 
 
 @router.message(Command(commands='help'))
@@ -65,3 +77,25 @@ async def process_ya_report_press(callback: CallbackQuery, bot: Bot):
         print(f"Произошла ошибка при удалении файла: {e}")
 
     users_db[callback.from_user.id]['user_usage_ym_transformer'].append(file_info)
+
+
+@router.message()
+async def process_forward_to_support(message: Message, support_chats):
+    await message.answer(LEXICON['to_support'])
+
+    bot_name = await message.bot.get_me()
+    for chat_id in support_chats:
+        await message.bot.send_message(
+            chat_id=chat_id,
+            text=LEXICON['for_support'].format(
+                bot_name=bot_name.username,
+                username=message.from_user.username,
+                user_id=message.from_user.id,
+                time_join=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            )
+        )
+        await message.bot.forward_message(
+            chat_id=chat_id,  # ID чата поддержки
+            from_chat_id=message.chat.id,  # ID чата пользователя
+            message_id=message.message_id  # ID пересылаемого сообщения
+        )

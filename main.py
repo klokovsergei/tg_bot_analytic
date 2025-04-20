@@ -31,11 +31,12 @@ async def main():
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
     dp = Dispatcher()
+    dp['support_chats'] = config.tg_bot.support_channel_ids
 
     await set_main_menu(bot)
 
-    dp.include_router(user_handlers.router)
     dp.include_router(admin_handlers.router)
+    dp.include_router(user_handlers.router)
 
     logger.info('Обнуляем очередь апдейтов')
     await bot.delete_webhook(drop_pending_updates=True)
