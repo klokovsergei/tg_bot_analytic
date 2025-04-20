@@ -7,6 +7,7 @@ venv/
 __pycache__/
 
 temp/*
+!temp/.gitkeep
 database/users_db.json
 
 # Mac OS
