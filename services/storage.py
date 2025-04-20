@@ -8,7 +8,7 @@ def save_users_db(users_db: dict[int, dict[str, list[tuple[str, str]]]]) -> None
     """Сохраняет users_db в JSON-файл"""
     serializable_db = {
         str(user_id): {
-            key: list(map(list, value))  # tuple -> list
+            key: [list(item) for item in value]
             for key, value in inner.items()
         }
         for user_id, inner in users_db.items()
