@@ -12,14 +12,18 @@ router = Router()
 
 
 @router.message(Command(commands='check'))
-async def process_stop_command(message: Message):
+async def process_stop_command(message: Message, admin_list):
+    if message.chat.id not in admin_list:
+        return await message.answer(LEXICON['not admin'])
     text = f'Ботом пользуются:\n\n{set(users_db.keys())}'
     await message.answer(text)
 
 
 @router.message(Command(commands='stop'))
-async def process_stop_command(message: Message, bot: Bot):
-    save_users_db(users_db)
+async def process_stop_command(message: Message, bot: Bot, admin_list):
+    if message.chat.id not in admin_list:
+        return await message.answer(LEXICON['not admin'])
+    await save_users_db(users_db)
     await message.answer(LEXICON[message.text])
     await bot.session.close()
     asyncio.get_event_loop().stop()

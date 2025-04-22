@@ -4,7 +4,7 @@ from pathlib import Path
 DB_PATH = Path("database/users_db.json")
 
 
-def save_users_db(users_db: dict[int, dict[str, list[tuple[str, str]]]]) -> None:
+async def save_users_db(users_db: dict[int, dict[str, list[tuple[str, str]]]]) -> None:
     """Сохраняет users_db в JSON-файл"""
     serializable_db = {
         str(user_id): {
