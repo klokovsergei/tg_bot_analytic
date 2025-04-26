@@ -17,3 +17,5 @@ database/users_db.json
 *.pyc
 *.pyo
 *.pyd
+
+*.rdb
